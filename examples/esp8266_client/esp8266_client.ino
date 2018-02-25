@@ -3,6 +3,8 @@
    Date: Feb 24, 2018
 */
 
+#include <ESP8266WiFi.h>          // ESP WiFi Libarary
+#include <PubSubClient.h>         // MQTT publisher/subscriber client 
 #include <AERClient.h>
 
 //////////////////////////////////////
