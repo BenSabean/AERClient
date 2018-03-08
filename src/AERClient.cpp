@@ -1,5 +1,5 @@
 
-#include "AERClient.h"                // Library for One-Wire interface
+#include <AERClient.h>            // Library for One-Wire interface 
 
 // Constructor that that stores Module ID
 AERClient::AERClient(int ID)
@@ -13,8 +13,7 @@ AERClient::AERClient(int ID)
 */
 void AERClient::init(const char* ssid, const char* password)
 {
-  uint8_t mac[6];
-
+  uint8_t mac[6], status;
   // Saving Wifi Parametrs
   _ssid = ssid;
   _password = password;
@@ -22,14 +21,12 @@ void AERClient::init(const char* ssid, const char* password)
   _client = new PubSubClient(_server, _port, _espClient);
   _client->setServer(_server, 1883);
   // Generating ID for MQTT broker
-  clientName += "esp8266-";
   WiFi.macAddress(mac);
-  clientName += macToStr(mac);
-  clientName += "-";
-  clientName += String(_ID);
+  clientName = clientName + "esp8266-" + macToStr(mac) + "-" + String(_ID);
   // Establish WiFi Connection
+  WiFi.disconnect();
   WiFi.begin(_ssid, _password);
-  while (WiFi.status() != WL_CONNECTED) 
+  while (WiFi.localIP().toString() == "0.0.0.0")
   {
     delay(1000);
     Serial.print(".");
@@ -52,7 +49,7 @@ AERClient::~AERClient()
 bool AERClient::publish(String topic, String payload)
 {
   bool _result = false;
-  if (WiFi.status() == WL_CONNECTED)
+  if (WiFi.localIP().toString() != "0.0.0.0")
     _result = _client->publish((String(_ID) + "/" + topic).c_str(), payload.c_str());
   else
   {
@@ -72,7 +69,7 @@ void AERClient::reconnect()
   while (!_client->connected()) 
   {
     if (!_client->connect(clientName.c_str(), mqtt_user, mqtt_pswd))
-      delay(30000);
+      delay(10 * 1000);
   }
 }
 
@@ -96,16 +93,15 @@ String AERClient::macToStr(const uint8_t* mac)
 */
 void AERClient::debug()
 {
-  Serial.println(" ------- AERClient DEBUG ------- ");
-
+  Serial.println("\n------- AERClient DEBUG ------- ");
   Serial.print("WiFi IP address: ");
   Serial.println(WiFi.localIP());
-
   Serial.println("Module Name: " + clientName);
   Serial.println("Connecting to: " + String(_ssid));
-  Serial.print("With password: " + String(_password));
-
+  Serial.println("With password: " + String(_password));
   Serial.println("MQTT Status: " + String(_client->state()));
+  Serial.println("------- WiFi DEBUG ------- ");
+  WiFi.printDiag(Serial);
 }
 
 

@@ -11,7 +11,6 @@
 
 #include <ESP8266WiFi.h>          // ESP WiFi Libarary
 #include <PubSubClient.h>         // MQTT publisher/subscriber client 
-#include <stdio.h>
 #include "Arduino.h"
 
 /*
@@ -29,7 +28,7 @@ class AERClient
     char* mqtt_user = "aerlab";
     char* mqtt_pswd = "server";
     char* _server = "aerlab.ddns.net";
-    uint8_t _ID;
+    int _ID;
     int _port = 1883;
   private:
     const char* _ssid;            // Wifi Name

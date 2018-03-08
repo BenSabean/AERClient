@@ -1,2 +1,4 @@
 AERClient	KEYWORD1
+init        KEYWORD2
+debug       KEYWORD2
 
