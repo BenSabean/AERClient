@@ -50,10 +50,14 @@ bool AERClient::publish(String topic, String payload)
 {
   bool _result = false;
   if (WiFi.localIP().toString() != "0.0.0.0")
-    _result = _client->publish((String(_ID) + "/" + topic).c_str(), payload.c_str());
+  {
+    reconnect();
+    _client->loop();
+    _result = _client->publish((String(_ID) + "/" + topic).c_str(), payload.c_str(), 2);
+  }
   else
   {
-    WiFi.begin(_ssid, _password);   // WiFi reconnect 
+    WiFi.begin(_ssid, _password);
     reconnect();                    //check for MQTT Connection
     _client->loop();
   }
