@@ -25,6 +25,7 @@ void AERClient::init(const char* ssid, const char* password)
   clientName = clientName + "esp8266-" + macToStr(mac) + "-" + String(_ID);
   // Establish WiFi Connection
   WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
   WiFi.begin(_ssid, _password);
   while (WiFi.localIP().toString() == "0.0.0.0")
   {
@@ -40,6 +41,14 @@ void AERClient::init(const char* ssid, const char* password)
 AERClient::~AERClient()
 {
   delete _client;
+}
+
+void AERClient::disableReconnect() {
+    _reconnectFlag = false;
+}
+
+void AERClient::enableReconnect() {
+    _reconnectFlag = true;
 }
 
 /*
@@ -69,11 +78,13 @@ bool AERClient::publish(String topic, String payload)
 */
 void AERClient::reconnect()
 {
-  // Loop until we're reconnected
-  while (!_client->connected()) 
-  {
-    if (!_client->connect(clientName.c_str(), mqtt_user, mqtt_pswd))
-      delay(10 * 1000);
+  if(_reconnectFlag) {
+    // Loop until we're reconnected
+    while (!_client->connected())
+    {
+      if (!_client->connect(clientName.c_str(), mqtt_user, mqtt_pswd))
+        delay(10 * 1000);
+    }
   }
 }
 
