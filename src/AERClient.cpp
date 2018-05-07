@@ -7,11 +7,18 @@ AERClient::AERClient(int ID)
   _ID = ID;
 }
 
+// Constructor that that stores Module ID and timeout value
+AERClient::AERClient(int ID, unsigned int timeout)
+{
+    _ID = ID;
+    _timeout = timeout;
+}
+
 /*
   Establishes connection to WiFi access point with parameters provided
   Connects to MQTT broker - aerlab.ddns.net
 */
-void AERClient::init(const char* ssid, const char* password)
+bool AERClient::init(const char* ssid, const char* password)
 {
   uint8_t mac[6], status;
   // Saving Wifi Parametrs
@@ -26,15 +33,13 @@ void AERClient::init(const char* ssid, const char* password)
   // Establish WiFi Connection
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
-  WiFi.begin(_ssid, _password);
-  while (WiFi.localIP().toString() == "0.0.0.0")
-  {
-    delay(1000);
-    Serial.print(".");
+  if(!wifiConnect()) {
+    return false;
   }
   //check for MQTT Connection
   if (!_client->connected()) reconnect();
   _client->loop();
+  return true;
 }
 
 // Destructor to de-allocate memory
@@ -66,11 +71,35 @@ bool AERClient::publish(String topic, String payload)
   }
   else
   {
-    WiFi.begin(_ssid, _password);
+    if(!wifiConnect()) {
+      return false;
+    }
     reconnect();                    //check for MQTT Connection
     _client->loop();
   }
   return _result;
+}
+
+
+/*
+  Connect to Wi-Fi access point
+*/
+bool AERClient::wifiConnect()
+{
+    // Attempt to connect to access point
+    WiFi.begin(_ssid, _password);
+    uint8_t i = 0;
+    // Wait for Wi-Fi to connect or for timeout
+    while (WiFi.localIP().toString() == "0.0.0.0" && i <= _timeout)
+    {
+        delay(1000);
+        Serial.print(".");
+        i++;
+    }
+    if(i > _timeout) {
+        return false;  // Could not connect
+    }
+    return true;
 }
 
 /*
@@ -79,11 +108,11 @@ bool AERClient::publish(String topic, String payload)
 void AERClient::reconnect()
 {
   if(_reconnectFlag) {
-    // Loop until we're reconnected
+    // Loop until we're reconnected or time out
     while (!_client->connected())
     {
-      if (!_client->connect(clientName.c_str(), mqtt_user, mqtt_pswd))
-        delay(10 * 1000);
+        if (!_client->connect(clientName.c_str(), mqtt_user, mqtt_pswd))
+            delay(10 * 1000);
     }
   }
 }
