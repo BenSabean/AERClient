@@ -29,7 +29,7 @@ bool AERClient::init(const char* ssid, const char* password)
     _client->setServer(_server, 1883);
     // Generating ID for MQTT broker
     WiFi.macAddress(mac);
-    clientName = clientName + "esp8266-" + macToStr(mac) + "-" + String(_ID);
+    clientName = "esp8266-" + macToStr(mac) + "-" + String(_ID);
     // Establish WiFi Connection
     WiFi.disconnect();
     WiFi.mode(WIFI_STA);
