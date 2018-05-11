@@ -80,6 +80,14 @@ bool AERClient::publish(String topic, String payload)
     return _result;
 }
 
+/*
+ Subscribe to an MQTT topic
+ First parameter - topic, Second parameter - pointer to callback function
+ */
+void AERClient::subscribe(char* topic, void (*pCallback)(char*, byte*, unsigned int)) {
+    _client->subscribe(topic);
+    _client->setCallback(pCallback);
+}
 
 /*
  Connect to Wi-Fi access point
@@ -128,6 +136,13 @@ String AERClient::macToStr(const uint8_t* mac)
             result += ':';
     }
     return result;
+}
+
+void AERClient::loop() {
+    if (!_client->connected()) {
+        wifiConnect();
+    }
+    _client->loop();
 }
 
 /*

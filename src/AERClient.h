@@ -25,8 +25,10 @@ class AERClient
     ~AERClient();
     bool init(const char*, const char*);
     bool publish(String, String);
+    void subscribe(char* topic, void (*pCallback)(char*, byte*, unsigned int));
     void disableReconnect();
     void enableReconnect();
+    void loop();
     void debug();
     char* mqtt_user = "aerlab";
     char* mqtt_pswd = "server";
